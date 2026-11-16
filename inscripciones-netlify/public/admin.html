@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Panel de la institución</title>
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css"></head>
+<body class="admin">
+<nav class="topbar"><div class="wrap">
+  <img class="logo" src="logo.png" alt="Escudo de la Escuela Técnica Juana Manso">
+  <div><strong>Escuela Técnica Juana Manso</strong><span class="sub">Panel de la institución</span></div>
+  <span class="chip">Uso interno</span>
+</div></nav>
+<main>
+<form id="login" class="panel login">
+  <h2>Acceso institucional</h2>
+  <p class="hint" style="margin:-8px 0 16px">Solo para personal autorizado.</p>
+  <div class="grid">
+    <div><label for="u">Usuario</label><input id="u" autocomplete="username" required></div>
+    <div><label for="c">Contraseña</label><input id="c" type="password" autocomplete="current-password" required></div>
+  </div>
+  <p><button type="submit">Ingresar</button></p>
+  <div id="lmsg" class="msg error" hidden></div>
+</form>
+
+<section id="app" hidden>
+  <div class="tabs" role="tablist">
+    <button class="sec" role="tab" data-v="pendiente">Pendientes</button>
+    <button class="sec" role="tab" data-v="aprobada">Aprobadas</button>
+    <button class="sec" role="tab" data-v="rechazada">Rechazadas</button>
+    <button class="sec" role="tab" data-v="inscriptos">Inscriptos (base de datos)</button>
+    <button class="sec" id="salir" style="margin-left:auto">Salir</button>
+  </div>
+  <div id="aviso" role="status" hidden></div>
+  <div id="export" class="acciones" hidden style="margin-bottom:14px">
+    <button data-x="xlsx">Descargar Excel</button><button data-x="pdf">Descargar PDF</button>
+  </div>
+  <div id="lista"></div>
+</section>
+</main>
+<script>
+let token = sessionStorage.getItem('tk'), vista = 'pendiente';
+const $ = id => document.getElementById(id);
+const ETQ = {nombre:'Nombre',apellido:'Apellido',dni:'DNI',fecha_nacimiento:'Nacimiento',email:'Email',telefono:'Teléfono',
+  domicilio:'Domicilio',especialidad:'Especialidad',escuela_anterior:'Escuela anterior',tutor_nombre:'Tutor',tutor_telefono:'Tel. tutor'};
+
+async function api(url, opts = {}) {
+  const r = await fetch(url, { ...opts, headers:{'Content-Type':'application/json', Authorization:'Bearer ' + token} });
+  const d = await r.json();
+  if (r.status === 401) { salir(); throw new Error(d.error); }
+  if (!r.ok) throw new Error(d.error || 'Error');
+  return d;
+}
+function aviso(t, error){ const e = $('aviso'); e.hidden = false; e.className = 'msg ' + (error ? 'error' : 'ok'); e.textContent = t; }
+function avisoMail(r){
+  const m = { enviado:'Email enviado al aspirante.', simulado:'Email simulado: falta configurar el correo (SMTP) en Netlify.', error:'No se pudo enviar el email. Revisá la configuración.' };
+  aviso('Listo. ' + m[r.mail], r.mail === 'error');
+}
+async function bajar(url, nombre) {
+  try {
+    const r = await fetch(url, { headers:{ Authorization:'Bearer ' + token } });
+    if (r.status === 401) return salir();
+    if (!r.ok) throw new Error((await r.json()).error || 'No se pudo descargar.');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(await r.blob()); a.download = nombre; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  } catch (e) { aviso(e.message, true); }
+}
+document.querySelectorAll('[data-x]').forEach(b => b.onclick = () => bajar('/api/admin/exportar/inscriptos.' + b.dataset.x, 'inscriptos.' + b.dataset.x));
+function salir(){ sessionStorage.removeItem('tk'); token = null; $('app').hidden = true; $('login').hidden = false; }
+function mostrarApp(){ $('login').hidden = true; $('app').hidden = false; cargar(); }
+
+$('login').addEventListener('submit', async e => {
+  e.preventDefault();
+  const boton = $('login').querySelector('button[type="submit"]');
+  const mensaje = $('lmsg');
+  boton.disabled = true;
+  boton.textContent = 'Ingresando...';
+  mensaje.hidden = true;
+  try {
+    const r = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ usuario: $('u').value.trim(), clave: $('c').value })
+    });
+    const d = await r.json();
+    if (!r.ok) {
+      mensaje.hidden = false;
+      mensaje.textContent = d.error || 'No se pudo iniciar sesión.';
+      return;
+    }
+    if (!d.token) throw new Error('El servidor respondió, pero no envió un token de sesión.');
+    token = d.token;
+    sessionStorage.setItem('tk', token);
+    $('c').value = '';
+    mostrarApp();
+  } catch (error) {
+    mensaje.hidden = false;
+    mensaje.textContent = 'No se pudo conectar con el servidor. Verificá que esté iniciado y volvé a intentarlo. Detalle: ' + error.message;
+    console.error('Error al iniciar sesión:', error);
+  } finally {
+    boton.disabled = false;
+    boton.textContent = 'Ingresar';
+  }
+});
+$('salir').onclick = salir;
+document.querySelectorAll('[data-v]').forEach(b => b.onclick = () => { vista = b.dataset.v; cargar(); });
+
+function tarjeta(s) {
+  const c = document.createElement('div'); c.className = 'card';
+  const h = document.createElement('h3');
+  h.textContent = `${s.apellido}, ${s.nombre}` + (s.solicitud_id ? '' : `  (solicitud #${s.id})`);
+  c.append(h);
+  const dl = document.createElement('dl');
+  for (const k in ETQ) if (s[k]) { const dt = document.createElement('dt'), dd = document.createElement('dd');
+    dt.textContent = ETQ[k]; dd.textContent = s[k]; dl.append(dt, dd); }
+  c.append(dl);
+  if (s.documentos?.length) {
+    const p = document.createElement('p'); p.textContent = 'Documentos: ';
+    s.documentos.forEach(d => { const b = document.createElement('button'); b.className = 'sec';
+      b.textContent = d.tipo === 'dni_foto' ? 'DNI' : 'Boletín';
+      b.onclick = () => bajar('/api/admin/documentos/' + d.id, d.nombre_original); p.append(b, ' '); });
+    c.append(p);
+  }
+  if (s.motivo) { const p = document.createElement('p'); p.textContent = 'Motivo del rechazo: ' + s.motivo; c.append(p); }
+  if (s.estado === 'pendiente') {
+    const a = document.createElement('div'); a.className = 'acciones';
+    const ok = document.createElement('button'); ok.textContent = 'Aprobar y guardar';
+    ok.onclick = async () => { try { avisoMail(await api(`/api/admin/solicitudes/${s.id}/aprobar`, {method:'POST'})); cargar(); } catch(e){ alert(e.message); } };
+    const no = document.createElement('button'); no.className = 'mal'; no.textContent = 'Rechazar';
+    no.onclick = async () => { const motivo = prompt('Motivo del rechazo (opcional):'); if (motivo === null) return;
+      try { avisoMail(await api(`/api/admin/solicitudes/${s.id}/rechazar`, {method:'POST', body:JSON.stringify({motivo})})); cargar(); } catch(e){ alert(e.message); } };
+    a.append(ok, no); c.append(a);
+  }
+  return c;
+}
+
+async function cargar() {
+  $('export').hidden = vista !== 'inscriptos';
+  document.querySelectorAll('[data-v]').forEach(b => b.setAttribute('aria-selected', b.dataset.v === vista));
+  const url = vista === 'inscriptos' ? '/api/admin/inscriptos' : '/api/admin/solicitudes?estado=' + vista;
+  try {
+    const datos = await api(url);
+    const cont = $('lista'); cont.replaceChildren();
+    if (!datos.length) { const v = document.createElement('p'); v.className = 'vacio'; v.textContent = 'No hay registros en esta sección.'; cont.append(v); }
+    datos.forEach(s => cont.append(tarjeta(s)));
+  } catch {}
+}
+if (token) mostrarApp();
+</script></body></html>

@@ -1,0 +1,81 @@
+/* ====== Colores (verdes del escudo). Cambiá acá y cambia en todo el sitio ====== */
+:root{--v9:#0f3d1c;--v7:#1f6b2c;--v6:#2c8a3e;--v1:#eaf4ec;--v0:#f6faf7;--linea:#d3e0d6;--tinta:#16251a;--suave:#5d7062;--error:#b3261e;--oro:#f1e46a}
+*{box-sizing:border-box}
+html{color-scheme:light}
+body{margin:0;font:16px/1.6 "Segoe UI",system-ui,sans-serif;background:var(--v0);color:var(--tinta)}
+h1,h2,h3,.topbar strong{font-family:Poppins,"Segoe UI",system-ui,sans-serif;line-height:1.2}
+
+/* ====== Barra superior con logo (las dos páginas) ====== */
+.topbar{background:#fff;border-bottom:1px solid var(--linea);position:sticky;top:0;z-index:5}
+.wrap{max-width:760px;margin:0 auto;padding:0 20px}
+.topbar .wrap{display:flex;align-items:center;gap:12px;padding-top:10px;padding-bottom:10px}
+.logo{height:46px;width:auto}
+.topbar strong{display:block;font-size:1rem;font-weight:600;color:var(--v9)}
+.topbar .sub{font-size:.82rem;color:var(--suave)}
+.topbar .chip{margin-left:auto;font-size:.72rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;background:var(--v1);color:var(--v7);padding:4px 10px;border-radius:999px}
+
+/* ====== Formularios y botones ====== */
+main{max-width:760px;margin:0 auto;padding:24px 20px 60px}
+.panel{background:#fff;border:1px solid var(--linea);border-radius:16px;padding:26px;margin-bottom:20px;box-shadow:0 12px 32px rgba(15,61,28,.10)}
+h2{margin:0 0 16px;font-size:1.1rem;color:var(--v9)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.full{grid-column:1/-1}
+@media(max-width:600px){.grid{grid-template-columns:1fr}.panel{padding:20px}}
+label{display:block;font-weight:600;font-size:.9rem;margin-bottom:5px;color:var(--v9)}
+input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--linea);border-radius:10px;font:inherit;background:#fbfdfb;color:var(--tinta);transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus{outline:0;border-color:var(--v6);box-shadow:0 0 0 4px rgba(44,138,62,.18)}
+input[type=file]{padding:8px;background:#fff}
+input[type=file]::file-selector-button{margin-right:10px;border:0;border-radius:8px;padding:7px 12px;background:var(--v1);color:var(--v7);font-weight:600;cursor:pointer}
+button{font:inherit;font-weight:600;padding:11px 20px;border:0;border-radius:10px;background:var(--v7);color:#fff;cursor:pointer;transition:background .15s,transform .15s}
+button:hover{background:var(--v9)}
+button:focus-visible{outline:3px solid var(--oro);outline-offset:2px}
+button.sec{background:#fff;color:var(--v7);border:1px solid var(--linea);padding:7px 14px;font-size:.9rem}
+button.sec:hover{background:var(--v1)}
+button.mal{background:#fff;color:var(--error);border:1px solid #e6bcb8}
+button.mal:hover{background:#fbeceb}
+button:disabled{opacity:.6;cursor:wait}
+.msg{padding:12px 14px;border-radius:10px;margin-top:14px}
+.msg.error{background:#fbeceb;color:var(--error)}
+.msg.ok{background:var(--v1);color:var(--v9)}
+.hint{color:var(--suave);font-size:.85rem;margin:3px 0 0}
+.acciones{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+
+/* ====== PÁGINA PÚBLICA: moderna y cálida ====== */
+.hero{color:#fff;padding:56px 0 120px;background:
+  radial-gradient(circle at 85% 10%,rgba(241,228,106,.22),transparent 40%),
+  radial-gradient(circle at 8% 100%,rgba(255,255,255,.13),transparent 45%),
+  linear-gradient(135deg,var(--v9),var(--v7))}
+.hero h1{font-size:clamp(1.9rem,5vw,2.8rem);margin:0 0 12px;font-weight:700}
+.hero em{font-style:normal;color:var(--oro)}
+.hero p{max-width:560px;margin:0 0 24px;opacity:.92;font-size:1.05rem}
+.pasos{list-style:none;margin:0;padding:0;display:flex;gap:10px;flex-wrap:wrap;counter-reset:p}
+.pasos li{counter-increment:p;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);padding:8px 14px;border-radius:999px;font-size:.9rem}
+.pasos li::before{content:counter(p);display:inline-grid;place-items:center;width:22px;height:22px;margin-right:8px;border-radius:50%;background:var(--oro);color:var(--v9);font-weight:700;font-size:.8rem}
+.publico main{margin-top:-84px;position:relative;padding-top:0}
+.publico form{counter-reset:s}
+.publico form h2{counter-increment:s;display:flex;align-items:center;gap:10px;margin-top:30px!important;padding-top:22px;border-top:1px solid var(--v1)}
+.publico form h2:first-child{margin-top:0!important;padding-top:0;border-top:0}
+.publico form h2::before{content:counter(s);display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--v7);color:#fff;font-size:.85rem}
+.publico form button[type=submit]{width:100%;padding:15px;font-size:1.05rem;background:linear-gradient(135deg,var(--v6),var(--v7));box-shadow:0 8px 20px rgba(31,107,44,.28)}
+.publico form button[type=submit]:hover{transform:translateY(-1px);background:linear-gradient(135deg,var(--v7),var(--v9))}
+footer{text-align:center;color:var(--suave);font-size:.85rem;padding:0 20px 40px}
+
+/* ====== PANEL DE LA INSTITUCIÓN: sobrio y profesional ====== */
+.admin{background:#eef2ef}
+.admin .wrap,.admin main{max-width:1100px}
+.admin .topbar{border-bottom:3px solid var(--v7)}
+.admin .panel{border-radius:12px;box-shadow:0 1px 3px rgba(15,61,28,.08)}
+.login{max-width:420px;margin:64px auto}
+.login .grid{grid-template-columns:1fr}
+.tabs{display:flex;gap:4px;margin-bottom:18px;flex-wrap:wrap;background:#fff;border:1px solid var(--linea);padding:5px;border-radius:12px}
+.tabs button.sec{background:transparent;border:0;color:var(--suave);padding:9px 16px}
+.tabs button.sec:hover{background:var(--v1);color:var(--v9)}
+.tabs button.sec[aria-selected=true]{background:var(--v7);color:#fff}
+.tabs #salir{margin-left:auto}
+#lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+.card{background:#fff;border:1px solid var(--linea);border-left:4px solid var(--v6);border-radius:10px;padding:16px}
+.card h3{margin:0 0 6px;font-size:1.02rem;color:var(--v9)}
+.card dl{display:grid;grid-template-columns:max-content 1fr;gap:3px 14px;margin:10px 0;font-size:.9rem}
+.card dt{color:var(--suave)}.card dd{margin:0;word-break:break-word}
+.card p{margin:8px 0 0;font-size:.9rem}
+.vacio{grid-column:1/-1;color:var(--suave);text-align:center;padding:40px}

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inscripciones – Escuela Técnica Juana Manso</title>
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css"></head>
+<body class="publico">
+<nav class="topbar"><div class="wrap">
+  <img class="logo" src="logo.png" alt="Escudo de la Escuela Técnica Juana Manso">
+  <div><strong>Escuela Técnica Juana Manso</strong><span class="sub">Inscripciones online</span></div>
+</div></nav>
+<section class="hero"><div class="wrap">
+  <h1>Tu inscripción <em> 100% online</em></h1>
+  <p>Completá el formulario, subí tu documentación y te avisamos por email cuando la escuela evalúe tu solicitud.</p>
+  <p>Segui estos pasos:</p>
+  <ol class="pasos"><li>Completá tus datos</li><li>Subí tu documentación</li><li>Recibí la respuesta por email</li></ol>
+</div></section>
+<main>
+<form id="f" class="panel" novalidate>
+  <h2>Datos del aspirante</h2>
+  <div class="grid">
+    <div><label for="nombre">Nombre</label><input id="nombre" name="nombre" required autocomplete="given-name"></div>
+    <div><label for="apellido">Apellido</label><input id="apellido" name="apellido" required autocomplete="family-name"></div>
+    <div><label for="dni">DNI</label><input id="dni" name="dni" inputmode="numeric" required><p class="hint">Sin puntos ni espacios.</p></div>
+    <div><label for="fecha_nacimiento">Fecha de nacimiento</label><input id="fecha_nacimiento" name="fecha_nacimiento" type="date" required></div>
+    <div><label for="email">Email</label><input id="email" name="email" type="email" required autocomplete="email"></div>
+    <div><label for="telefono">Teléfono</label><input id="telefono" name="telefono" type="tel" required autocomplete="tel"></div>
+    <div class="full"><label for="domicilio">Domicilio</label><input id="domicilio" name="domicilio" required autocomplete="street-address"></div>
+    <div><label for="especialidad">Especialidad</label><select id="especialidad" name="especialidad" required><option value="">Elije aca</option></select></div>
+    <div><label for="escuela_anterior">Escuela anterior</label><input id="escuela_anterior" name="escuela_anterior"></div>
+  </div>
+  <h2 style="margin-top:22px">Documentación OBLIGATORIA</h2>
+  <div class="grid">
+    <div><label for="dni_foto">Foto del DNI</label><input id="dni_foto" name="dni_foto" type="file" accept="image/jpeg,image/png,application/pdf" required><p class="hint">JPG, PNG o PDF. Hasta 2 MB.</p></div>
+    <div><label for="boletin">Boletín</label><input id="boletin" name="boletin" type="file" accept="image/jpeg,image/png,application/pdf"></div>
+  </div>
+  <h2 style="margin-top:22px">Madre/padre o tutor</h2>
+  <div class="grid">
+    <div><label for="tutor_nombre">Nombre y apellido</label><input id="tutor_nombre" name="tutor_nombre" required></div>
+    <div><label for="tutor_telefono">Teléfono</label><input id="tutor_telefono" name="tutor_telefono" type="tel" required></div>
+  </div>
+  <p style="margin-top:20px"><button type="submit">Enviar inscripción</button></p>
+  <div id="msg" role="status" aria-live="polite"></div>
+</form>
+</main>
+<footer>Escuela Técnica Juana Manso · Inscripciones online · Proyecto 7mo 2da.R.E.S.V</footer>
+<script>
+const f = document.getElementById('f'), msg = document.getElementById('msg');
+fetch('/api/especialidades').then(r => r.json()).then(l => {
+  const s = document.getElementById('especialidad');
+  l.forEach(e => s.add(new Option(e, e)));
+});
+function mostrar(texto, tipo){ msg.className = 'msg ' + tipo; msg.textContent = texto; }
+f.addEventListener('submit', async e => {
+  e.preventDefault();
+  if (!f.checkValidity()) { f.reportValidity(); return; }
+  const btn = f.querySelector('button'); btn.disabled = true;
+  try {
+    const r = await fetch('/api/inscripcion', { method:'POST', body: new FormData(f) });
+    const d = await r.json();
+    if (!r.ok) return mostrar(d.error || 'No se pudo enviar. Probá de nuevo.', 'error');
+    f.reset();
+    mostrar('Inscripción enviada. Tu número de solicitud es ' + d.numero + '. La escuela la va a evaluar y te va a contactar.', 'ok');
+  } catch { mostrar('No hay conexión con el servidor. Probá de nuevo en un rato.', 'error'); }
+  finally { btn.disabled = false; }
+});
+</script></body></html>
